@@ -146,8 +146,13 @@ root.bind("<Escape>", on_escape)
 count = 0
 
 ttk.Button(root, text="Проверить звук",
+          command=lambda: [engine.say("Тест громкости")]
+          ).pack(pady=10)
+
+ttk.Button(root, text="Проверить звук",
           command=lambda: [engine.say("Тест громкости"), engine.runAndWait()]
           ).pack(pady=10)
+
 # Основной интерфейс
 ttk.Label(root, text="Голосовой ассистент", font=("Arial", 16)).pack(pady=20)
 ttk.Button(root, text="Открыть настройки (Escape)", command=show_settings).pack()

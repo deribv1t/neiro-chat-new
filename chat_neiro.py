@@ -3,6 +3,7 @@ from tkinter import ttk
 from tkinter import font
 from functools import partial
 from llama_cpp import Llama
+from pathlib import Path
 import threading
 import pyttsx3
 import os
@@ -166,6 +167,8 @@ def return_neiro(text):
 
                 
     label["text"] = label["text"].replace('\n```\n','')
+    label["text"] = label["text"].replace('\n```','')
+
     label.bind("<Button-3>", partial(show_menu_spec,label))
 
     if stop_generation:
@@ -246,7 +249,7 @@ stop_generation = False
 
 
 style = ttk.Style()
-style.theme_use('clam')
+# style.theme_use('clam')
 style.configure("TLabel",
                 foreground="white",
                 font=('Open Sans',12),
@@ -360,23 +363,18 @@ entry.pack(fill=X,expand=True,side=LEFT,padx=(5,0),pady=(5,5))
 style.configure("Esc.TLabel",
                 foreground="black",
                 font=('Open Sans',12),
-                background="#FFFFFF",
+                background="#f0f0f0",
                 padding=8,
                 border=0
                 )
 
-style.configure("TSale",
-                
-
-)
-
 style.configure("Esc.TFrame",
-                background='#FFFFFF'
+                background='#f0f0f0'
                 )
 
 style.configure("Esc.TButton",
                 foreground="black",
-                background="#FFFFFF"
+                background="#f0f0f0"
                 )
 
 
@@ -445,6 +443,7 @@ def show_settings():
                             orient="horizontal",
                             command=partial(update_volume,volume_label)
                             )
+    
     volume_slider.set(current_volume)
     volume_slider.pack(fill="x")
 
@@ -472,18 +471,28 @@ def show_settings():
     speed_slider.bind("<MouseWheel>", partial(on_mousewheel_rate,speed_slider,speed_label))
 
 
-
     model_frame = ttk.Frame(notebook,
                             style="Esc.TFrame"
                             )
     notebook.add(model_frame, text="Модель")
+
     ttk.Label(model_frame, 
             text="Модель нейросети:",
             style="Esc.TLabel"
             ).pack(pady=(10, 0))
-    models = ["GPT-4", "GPT-3.5", "Claude 3", "Llama 3", "Mixtral"]
+    
+
+    models = []
+    filepath = Path('Model')
+
+    for file in os.listdir(filepath):
+        if file.endswith(".gguf"):
+            models.append(file)
+
+    print(models)
+
     model_combobox = ttk.Combobox(model_frame, values=models, state="readonly")
-    model_combobox.current(0)  # Выбираем первую модель по умолчанию
+    model_combobox.current(0)
     model_combobox.pack(pady=5, padx=10, fill="x")
     
     notebook.pack(expand=True, fill="both", padx=5, pady=5)
