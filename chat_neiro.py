@@ -246,20 +246,23 @@ stop_generation = False
 
 
 style = ttk.Style()
-
+style.theme_use('clam')
 style.configure("TLabel",
                 foreground="white",
                 font=('Open Sans',12),
                 background='#8f4bb0',
                 padding=8,
                 border=0,
-                wraplength=720)
+                wraplength=720
+                )
 
 style.configure("TFrame",
-                background='#072b3d')
+                background='#072b3d'
+                )
 
 style.configure("Bottom.TFrame",
-                background='#17212B')
+                background='#17212B'
+                )
 # style.configure("TButton",background='#000000',foreground="white",font=('Open Sans',13),border=4)
 
 canvas = Canvas(root,
@@ -350,8 +353,31 @@ entry.bind('<KeyRelease>', adjust_height)
 entry.pack(fill=X,expand=True,side=LEFT,padx=(5,0),pady=(5,5))
 
 
-"""------------------------------------------------------------------------------------------------------"""
+'-----------------------------------------------------------------------------------------------------------------'
 #Escape manu
+
+
+style.configure("Esc.TLabel",
+                foreground="black",
+                font=('Open Sans',12),
+                background="#FFFFFF",
+                padding=8,
+                border=0
+                )
+
+style.configure("TSale",
+                
+
+)
+
+style.configure("Esc.TFrame",
+                background='#FFFFFF'
+                )
+
+style.configure("Esc.TButton",
+                foreground="black",
+                background="#FFFFFF"
+                )
 
 
 def update_volume(volume_label,value):
@@ -386,10 +412,9 @@ def on_mousewheel_rate(slider,speed_label,event):
 
 def show_settings():
     global count
-    count += 1
-    if count > 1:
+    if count >= 1:
         return
-    
+    count += 1
     settings_window = Toplevel(root)
     settings_window.title("Настройки")
     settings_window.geometry("400x300")
@@ -401,13 +426,16 @@ def show_settings():
     
     notebook = ttk.Notebook(settings_window)
     
-    audio_frame = ttk.Frame(notebook)
+    audio_frame = ttk.Frame(notebook,
+                            style="Esc.TFrame"
+                            )
     notebook.add(audio_frame, text="Аудио")
 
 
     volume_label = ttk.Label(audio_frame,
                             text=f"Громкость: {int(current_volume*100)}%", 
-                            font=('Arial', 12)
+                            font=('Arial', 12),
+                            style="Esc.TLabel"
                             )
     volume_label.pack(pady=10)
 
@@ -425,7 +453,8 @@ def show_settings():
 
     speed_label = ttk.Label(audio_frame, 
                             text=f"Скорость: {int(current_rate)}x", 
-                            font=('Arial', 12)
+                            font=('Arial', 12),
+                            style="Esc.TLabel"
                         )
     speed_label.pack(pady=10)
 
@@ -433,7 +462,7 @@ def show_settings():
                             from_=1, 
                             to=500, 
                             orient="horizontal",
-                            command=partial(update_rate,speed_label)
+                            command=partial(update_rate,speed_label),
                             )
     
     speed_slider.set(current_rate)
@@ -444,9 +473,14 @@ def show_settings():
 
 
 
-    model_frame = ttk.Frame(notebook)
+    model_frame = ttk.Frame(notebook,
+                            style="Esc.TFrame"
+                            )
     notebook.add(model_frame, text="Модель")
-    ttk.Label(model_frame, text="Модель нейросети:").pack(pady=(10, 0))
+    ttk.Label(model_frame, 
+            text="Модель нейросети:",
+            style="Esc.TLabel"
+            ).pack(pady=(10, 0))
     models = ["GPT-4", "GPT-3.5", "Claude 3", "Llama 3", "Mixtral"]
     model_combobox = ttk.Combobox(model_frame, values=models, state="readonly")
     model_combobox.current(0)  # Выбираем первую модель по умолчанию
@@ -455,16 +489,24 @@ def show_settings():
     notebook.pack(expand=True, fill="both", padx=5, pady=5)
     
     # Кнопки
-    btn_frame = ttk.Frame(settings_window)
+    btn_frame = ttk.Frame(settings_window,
+                        style="Esc.TFrame"
+                        )
     btn_frame.pack(fill="x", padx=5, pady=5)
     
-    ttk.Button(btn_frame, text="Сохранить", 
-              command=lambda: save_settings(volume_slider.get(), 
-                                            speed_slider.get(), 
-                                            model_combobox.get()
-                                        )
+    ttk.Button(btn_frame, text="Сохранить",
+            style="Esc.TButton",
+            command=lambda: save_settings(volume_slider.get(), 
+                                        speed_slider.get(), 
+                                        model_combobox.get()
+                                    )
             ).pack(side="right", padx=5)
-    ttk.Button(btn_frame, text="Отмена", command=partial(settings_close,settings_window)).pack(side="right", padx=5)
+    
+    ttk.Button(btn_frame, 
+            text="Отмена", 
+            command=partial(settings_close,settings_window),
+            style="Esc.TButton"
+        ).pack(side="right", padx=5)
 
 def settings_close(window,event=None):
     global count

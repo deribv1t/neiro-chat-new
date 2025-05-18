@@ -57,9 +57,9 @@ def show_settings():
 
     volume_label = ttk.Label(audio_frame,
                             text=f"Громкость: {int(current_volume*100)}%", 
-                            font=('Arial', 12)
+                            font=('Arial', 13)
                             )
-    volume_label.pack(pady=10)
+    volume_label.pack()
 
     volume_slider = ttk.Scale(audio_frame, 
                             from_=0, 
@@ -72,12 +72,11 @@ def show_settings():
 
     volume_slider.bind("<MouseWheel>", partial(on_mousewheel_volume,volume_slider,volume_label))
 
-
     speed_label = ttk.Label(audio_frame, 
                             text=f"Скорость: {int(current_rate)}x", 
-                            font=('Arial', 12)
+                            font=('Arial', 13)
                         )
-    speed_label.pack(pady=10)
+    speed_label.pack()
 
     speed_slider = ttk.Scale(audio_frame, 
                             from_=1, 
@@ -85,11 +84,9 @@ def show_settings():
                             orient="horizontal",
                             command=partial(update_rate,speed_label)
                             )
-    
     speed_slider.set(current_rate)
-    speed_slider.pack(pady=5, padx=10, fill="x")
+    speed_slider.pack(fill="x")
     
-
     speed_slider.bind("<MouseWheel>", partial(on_mousewheel_rate,speed_slider,speed_label))
 
 
@@ -136,7 +133,7 @@ def save_settings(volume, speed, model):
 def on_escape(event):
     show_settings()
 
-# Создаем главное окно
+
 root = Tk()
 root.title("Голосовой ассистент")
 root.geometry("800x600")
