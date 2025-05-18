@@ -1,0 +1,9 @@
+Model/
+dist/
+build/
+chat_human.py
+chat_Neiro_DeepSeek.py
+chat_Neiro_Gemma.py
+chat_Neiro_Qwen.py
+main.exe
+main.py
