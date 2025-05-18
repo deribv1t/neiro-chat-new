@@ -340,7 +340,6 @@ def adjust_height(event):
         entry.config(height=new_height)
         
     entry.see(INSERT)
-    # entry.see(END)
     
 scroll_text = ttk.Scrollbar(entry, orient="vertical", command=entry.yview)
 entry.configure(yscrollcommand=scroll_text.set)
