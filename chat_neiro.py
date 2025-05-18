@@ -3,7 +3,6 @@ from tkinter import ttk
 from tkinter import font
 from functools import partial
 from llama_cpp import Llama
-from pathlib import Path
 import threading
 import pyttsx3
 import os
@@ -55,22 +54,18 @@ def show_menu_spec(label,event):
     menu.post(event.x_root, event.y_root)
 
 def sound(label):
-    engine = pyttsx3.init()
-    voice_id = "HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Speech\Voices\Tokens\TTS_MS_RU-RU_IRINA_11.0"
-    engine.setProperty('voice', voice_id)
-
-    engine.setProperty('rate', 180)
-    engine.setProperty('volume', 0.9)
-    engine.setProperty('pitch', 200)
-
+    global engine
     engine.say(label["text"])
     engine.runAndWait()
 
 def replace_label(label,event=None):
     text = entry.get("1.0", "end-1c")
-    label["text"] = text
-    entry.delete("1.0", END)
-
+    if event != None:
+        label["text"] = text[0:-1]
+        entry.delete("1.0", END)
+    else:
+        label["text"] = text
+        entry.delete("1.0", END)
     root.unbind("<Return>")
     root.bind("<Return>",change_action)
     btn.config(text='✅',
@@ -94,7 +89,6 @@ def replace_text(label,event=None):
             )
 
 def insert_newline(event):
-    entry.insert("insert", "\n")
     return "break"
 
 def updatesize(event=None):
@@ -107,10 +101,18 @@ def stop_generating():
     stop_generation = True
 
 def return_neiro(text):
-    global llm
     global messages
     global stop_generation
-    global generate
+    global generate,stop_generation,modelpath
+
+    filepath = os.path.join(os.path.dirname(__file__),modelpath)
+    llm = Llama(
+        model_path=filepath,
+        n_ctx=2048,
+        n_threads=8,
+        verbose=False,
+        temperature=0.7
+        )
 
     generate = True
     messages.append({"role":"user",
@@ -213,8 +215,8 @@ def textEntry(event=None):
     entry.delete("1.0", "end")
     entry["height"] = 1
     message('se',txt)
-    thread = threading.Thread(target=return_neiro, args=(txt,))
-    thread.start()
+    # thread = threading.Thread(target=return_neiro, args=(txt,))
+    # thread.start()
     return
 
 
@@ -224,21 +226,13 @@ root.config(bg='#072b3d')
 root.minsize(200, 400)
 root.title("Chat")
 
-root.bind('<Return>',change_action)
+root.bind('<Return>',change_action,add='+')
 root.bind('<Configure>',updatesize)
 root.bind("<Control-Return>", insert_newline)
 
 user_scrolled_up = False
 
-
-filepath = os.path.join(os.path.dirname(__file__), "Model/gemma-3-1b-it-Q8_0.gguf")
-llm = Llama(
-    model_path=filepath,
-    n_ctx=2048,
-    n_threads=8,
-    verbose=False,
-    temperature=0.7
-    )
+modelpath = "Model/gemma-3-1b-it-Q8_0.gguf"
 
 messages = [
     {"role": "system", 
@@ -246,6 +240,17 @@ messages = [
     отвечай без кода если тебя не просили написать код"}
     ]
 stop_generation = False
+generate = False
+
+engine = pyttsx3.init()
+voice_id = "HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Speech\Voices\Tokens\TTS_MS_RU-RU_IRINA_11.0"
+engine.setProperty('voice', voice_id)
+engine.setProperty('rate', 180)
+engine.setProperty('volume', 0.9)
+engine.setProperty('pitch', 200)
+
+itog_rate = engine.getProperty('rate')
+itog_volume = engine.getProperty('volume')
 
 
 style = ttk.Style()
@@ -350,7 +355,7 @@ def adjust_height(event):
 scroll_text = ttk.Scrollbar(entry, orient="vertical", command=entry.yview)
 entry.configure(yscrollcommand=scroll_text.set)
 
-entry.bind('<Configure>',updatesize)
+entry.bind('<Configure>',updatesize,add='+')
 entry.bind('<Configure>',adjust_height)
 entry.bind('<KeyRelease>', adjust_height)
 entry.pack(fill=X,expand=True,side=LEFT,padx=(5,0),pady=(5,5))
@@ -409,7 +414,8 @@ def on_mousewheel_rate(slider,speed_label,event):
 
 
 def show_settings():
-    global count
+    global itog_rate,itog_volume,modelpath,count
+
     if count >= 1:
         return
     count += 1
@@ -444,7 +450,7 @@ def show_settings():
                             command=partial(update_volume,volume_label)
                             )
     
-    volume_slider.set(current_volume)
+    volume_slider.set(itog_volume)
     volume_slider.pack(fill="x")
 
     volume_slider.bind("<MouseWheel>", partial(on_mousewheel_volume,volume_slider,volume_label))
@@ -464,7 +470,7 @@ def show_settings():
                             command=partial(update_rate,speed_label),
                             )
     
-    speed_slider.set(current_rate)
+    speed_slider.set(itog_rate)
     speed_slider.pack(pady=5, padx=10, fill="x")
     
 
@@ -483,16 +489,17 @@ def show_settings():
     
 
     models = []
-    filepath = Path('Model')
+    filedir = 'Model'
 
-    for file in os.listdir(filepath):
+    for file in os.listdir(filedir):
         if file.endswith(".gguf"):
             models.append(file)
 
-    print(models)
-
     model_combobox = ttk.Combobox(model_frame, values=models, state="readonly")
-    model_combobox.current(0)
+    for i in range(len(models)):
+        if models[i] in modelpath:
+            model_combobox.current(i)
+
     model_combobox.pack(pady=5, padx=10, fill="x")
     
     notebook.pack(expand=True, fill="both", padx=5, pady=5)
@@ -523,7 +530,12 @@ def settings_close(window,event=None):
     count -= 1
 
 def save_settings(volume, speed, model):
+    global itog_rate,itog_volume,modelpath
+    itog_rate = speed
+    itog_volume = volume
+    modelpath = f"Model/{model}"
     print(f"Сохранены настройки: Громкость={volume}%, Скорость={speed}x, Модель={model}")
+    
     root.focus_set()
 
 def on_escape(event):
